@@ -77,4 +77,5 @@ npm run tauri build
 
 ## Lisans
 
-Kişisel kullanım amaçlı. Lisans henüz belirlenmedi.
+[MIT](LICENSE) — istediğin gibi kullan, fork et, modifiye et; tek
+şart `LICENSE` dosyasındaki telif notunu türev sürümlerde koru.
