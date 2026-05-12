@@ -1,0 +1,262 @@
+/* Genç IPTV — Windows design tokens (dark) */
+:root {
+  /* Surfaces */
+  --bg:        #0E1213;
+  --bg-elev:   #161B1D;
+  --bg-elev2:  #1F2A2C;
+  --bg-elev3:  #243133;
+  --bg-paper:  #0A0D0E;
+
+  /* Text */
+  --text:      #E8EDEC;
+  --text-2:    #9DA8A6;
+  --text-3:    #6A7472;
+  --text-4:    #4B5454;
+
+  /* Lines */
+  --border:    #1F2A2C;
+  --line:      #161B1D;
+  --hairline:  rgba(232, 237, 236, 0.06);
+
+  /* Brand */
+  --copper:    #C68A5C;
+  --copper-2:  #E0A878;
+  --copper-3:  #7A4A2A;
+  --teal:      #3FD0BD;
+  --teal-2:    #5DEAD8;
+  --teal-3:    #0F8A7E;
+
+  /* Accent (default = teal). Override with [data-accent]. */
+  --accent:        #3FD0BD;
+  --accent-strong: #5DEAD8;
+  --accent-deep:   #0F8A7E;
+  --accent-ink:    #062320;
+
+  /* Type — premium magazine system (default).
+     Newsreader: editorial book serif w/ optical sizes (replaces Instrument Serif)
+     Hanken Grotesk: Söhne-adjacent neutral grot (replaces Geist)
+     JetBrains Mono: characterful slab mono (replaces Geist Mono) */
+  --serif: "Newsreader", "Cambria", "Georgia", serif;
+  --sans:  "Hanken Grotesk", "Segoe UI", system-ui, sans-serif;
+  --mono:  "JetBrains Mono", "Cascadia Code", ui-monospace, monospace;
+}
+
+/* Type system variants — toggleable via Tweaks */
+[data-type="magazine"] {
+  --serif: "Newsreader", "Cambria", "Georgia", serif;
+  --sans:  "Hanken Grotesk", "Segoe UI", system-ui, sans-serif;
+  --mono:  "JetBrains Mono", "Cascadia Code", ui-monospace, monospace;
+}
+[data-type="couture"] {
+  --serif: "Bodoni Moda", "Didot", "Cambria", serif;
+  --sans:  "Albert Sans", "Segoe UI", system-ui, sans-serif;
+  --mono:  "JetBrains Mono", "Cascadia Code", ui-monospace, monospace;
+}
+[data-type="boutique"] {
+  --serif: "Cormorant Garamond", "Garamond", "Cambria", serif;
+  --sans:  "Inter Tight", "Segoe UI", system-ui, sans-serif;
+  --mono:  "JetBrains Mono", "Cascadia Code", ui-monospace, monospace;
+}
+[data-type="archive"] {
+  --serif: "Spectral", "Cambria", "Georgia", serif;
+  --sans:  "Schibsted Grotesk", "Segoe UI", system-ui, sans-serif;
+  --mono:  "JetBrains Mono", "Cascadia Code", ui-monospace, monospace;
+}
+[data-type="default"] {
+  --serif: "Instrument Serif", "Cambria", "Georgia", serif;
+  --sans:  "Geist", "Segoe UI", system-ui, sans-serif;
+  --mono:  "Geist Mono", "Cascadia Code", ui-monospace, monospace;
+}
+
+:root {
+  /* Radii */
+  --r-xs: 4px;
+  --r-sm: 8px;
+  --r-md: 12px;
+  --r-lg: 16px;
+  --r-xl: 22px;
+
+  /* Shadow */
+  --shadow-card: 0 12px 32px rgba(0,0,0,0.5);
+  --shadow-pop:  0 24px 60px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.04);
+
+  /* Window chrome */
+  --titlebar-h: 36px;
+  --sidebar-w: 240px;
+  --sidebar-w-mini: 64px;
+  --topbar-h: 56px;
+}
+
+/* ── Light theme · warm paper, easy on eyes ───────────────── */
+[data-theme="light"] {
+  --bg:        #F6F2EC;     /* warm cream paper */
+  --bg-elev:   #FFFFFF;     /* card */
+  --bg-elev2:  #EFE9E0;     /* hover row, soft warm */
+  --bg-elev3:  #E5DFD3;     /* pressed / track */
+  --bg-paper:  #FBF8F2;     /* deepest paper */
+
+  --text:      #1F1B14;     /* warm near-black */
+  --text-2:    #5A564D;     /* warm body gray */
+  --text-3:    #8A857A;     /* meta */
+  --text-4:    #B5AFA3;     /* disabled */
+
+  --border:    #E5DFD3;
+  --line:      #EFE9E0;
+  --hairline:  rgba(20,18,14,0.08);
+
+  --teal:      #0F8A7E;     /* deeper teal for legibility */
+  --teal-2:    #3FD0BD;
+  --teal-3:    #0A6359;
+  --copper:    #A8693C;     /* deeper copper */
+  --copper-2:  #C68A5C;
+  --copper-3:  #6A3F1E;
+
+  --shadow-card: 0 4px 16px rgba(74,58,30,0.08), 0 1px 3px rgba(74,58,30,0.06);
+  --shadow-pop:  0 16px 48px rgba(74,58,30,0.18), 0 0 0 1px rgba(20,18,14,0.04);
+}
+
+/* Light theme accent overrides — deeper variants that hold contrast on cream */
+[data-theme="light"][data-accent="teal"]   { --accent:#0F8A7E; --accent-strong:#3FD0BD; --accent-deep:#0A6359; --accent-ink:#FBF8F2; }
+[data-theme="light"][data-accent="copper"] { --accent:#A8693C; --accent-strong:#C68A5C; --accent-deep:#6A3F1E; --accent-ink:#FBF8F2; }
+[data-theme="light"][data-accent="purple"] { --accent:#6244A8; --accent-strong:#8466C4; --accent-deep:#42306F; --accent-ink:#FBF8F2; }
+[data-theme="light"][data-accent="red"]    { --accent:#A8463C; --accent-strong:#C66055; --accent-deep:#6A2A22; --accent-ink:#FBF8F2; }
+[data-theme="light"][data-accent="blue"]   { --accent:#3C73A8; --accent-strong:#558FC4; --accent-deep:#264E70; --accent-ink:#FBF8F2; }
+[data-theme="light"][data-accent="green"]  { --accent:#4F8A45; --accent-strong:#6EAA64; --accent-deep:#33602B; --accent-ink:#FBF8F2; }
+[data-theme="light"][data-accent="yellow"] { --accent:#8A6F2A; --accent-strong:#B5942F; --accent-deep:#5A4818; --accent-ink:#FBF8F2; }
+[data-theme="light"][data-accent="gray"]   { --accent:#5A564D; --accent-strong:#8A857A; --accent-deep:#3A372F; --accent-ink:#FBF8F2; }
+
+[data-accent="teal"]   { --accent:#3FD0BD; --accent-strong:#5DEAD8; --accent-deep:#0F8A7E; --accent-ink:#062320; }
+[data-accent="copper"] { --accent:#C68A5C; --accent-strong:#E0A878; --accent-deep:#7A4A2A; --accent-ink:#2A1A0E; }
+[data-accent="purple"] { --accent:#9D7BD8; --accent-strong:#BBA0EA; --accent-deep:#6244A8; --accent-ink:#1A1228; }
+[data-accent="red"]    { --accent:#E07A6F; --accent-strong:#F09A8E; --accent-deep:#A8463C; --accent-ink:#2A100C; }
+[data-accent="blue"]   { --accent:#6FA8E0; --accent-strong:#92C2F0; --accent-deep:#3C73A8; --accent-ink:#0C1A2A; }
+[data-accent="green"]  { --accent:#86C97A; --accent-strong:#A9DD9F; --accent-deep:#4F8A45; --accent-ink:#0E1F0C; }
+[data-accent="yellow"] { --accent:#D4B86A; --accent-strong:#E8D08B; --accent-deep:#9A8138; --accent-ink:#231C08; }
+[data-accent="gray"]   { --accent:#B0BAB8; --accent-strong:#D2D9D7; --accent-deep:#6F7A77; --accent-ink:#10141360; }
+
+/* Reset bits used inside artboards */
+.gi *,.gi *::before,.gi *::after { box-sizing: border-box; }
+.gi {
+  font-family: var(--sans);
+  color: var(--text);
+  background: var(--bg);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+/* Light-theme adjustments for elements that use hardcoded dark values */
+[data-theme="light"] .gi .stripe-poster {
+  background:
+    repeating-linear-gradient(135deg, rgba(20,18,14,0.04) 0 2px, transparent 2px 8px),
+    linear-gradient(160deg, #E5DFD3 0%, #C9C0AE 100%) !important;
+  border-color: var(--border);
+}
+[data-theme="light"] .gi .stripe-poster .stripe-cap,
+[data-theme="light"] .gi .stripe-poster .stripe-num { color: var(--text-3); }
+[data-theme="light"] body { background: #E8E1D2; }
+
+/* Hide scrollbars inside artboards */
+.gi ::-webkit-scrollbar { display: none; }
+.gi { scrollbar-width: none; }
+
+/* Type helpers */
+.gi .h-display { font-family: var(--serif); font-weight: 400; letter-spacing: -0.025em; line-height: 1.02; }
+.gi .h-serif   { font-family: var(--serif); font-weight: 400; letter-spacing: -0.018em; line-height: 1.05; }
+.gi .h-italic  { font-family: var(--serif); font-style: italic; font-weight: 400; letter-spacing: -0.025em; }
+.gi .meta-caps {
+  font-family: var(--mono); font-size: 10px; letter-spacing: 0.16em;
+  text-transform: uppercase; color: var(--text-3);
+}
+.gi .mono { font-family: var(--mono); }
+
+/* Hairline divider */
+.gi .hairline { height:1px; background:var(--hairline); width:100%; }
+
+/* Card */
+.gi .card {
+  background: var(--bg-elev);
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+}
+
+/* Glow placeholder for posters/banners */
+.gi .stripe-poster {
+  position: relative;
+  background:
+    repeating-linear-gradient(
+      135deg,
+      rgba(255,255,255,0.025) 0 2px,
+      transparent 2px 8px
+    ),
+    linear-gradient(160deg, #1A2224 0%, #0F1517 100%);
+  overflow: hidden;
+}
+.gi .stripe-poster .stripe-cap {
+  position:absolute; inset:auto 0 12px 0; text-align:center;
+  font-family: var(--mono); font-size: 9px; letter-spacing: 0.16em;
+  color: var(--text-3); text-transform: uppercase;
+}
+.gi .stripe-poster .stripe-num {
+  position:absolute; top:10px; left:12px;
+  font-family: var(--mono); font-size: 9px; letter-spacing: 0.12em;
+  color: var(--text-4); text-transform: uppercase;
+}
+
+/* Buttons */
+.gi .btn {
+  display:inline-flex; align-items:center; gap:8px;
+  height:36px; padding: 0 14px; border-radius: var(--r-sm);
+  font: 500 13px/1 var(--sans);
+  border: 1px solid transparent; cursor: default;
+  white-space: nowrap;
+}
+.gi .btn-primary { background: var(--accent); color: var(--accent-ink); }
+.gi .btn-ghost   { background: transparent; color: var(--text); border-color: var(--border); }
+.gi .btn-link    { color: var(--accent); background: transparent; padding: 0; height:auto; }
+.gi .btn-icon    {
+  width:34px; height:34px; padding:0; border-radius: 999px;
+  display:inline-flex; align-items:center; justify-content:center;
+  background: transparent; color: var(--text-2);
+}
+.gi .btn-icon:hover { background: var(--bg-elev2); color: var(--text); }
+
+/* Pill */
+.gi .pill {
+  display:inline-flex; align-items:center; gap:6px;
+  height: 22px; padding: 0 9px; border-radius: 999px;
+  font: 500 10px/1 var(--mono); letter-spacing: 0.12em;
+  text-transform: uppercase;
+  background: var(--bg-elev2); color: var(--text-2);
+  border: 1px solid var(--border);
+}
+.gi .pill-live { color: var(--teal); border-color: rgba(63,208,189,0.25); background: rgba(63,208,189,0.08); }
+.gi .pill-hd   { color: var(--text); }
+.gi .pill-accent { color: var(--accent); border-color: color-mix(in oklab, var(--accent) 35%, transparent); background: color-mix(in oklab, var(--accent) 10%, transparent); }
+
+/* Live dot */
+.gi .live-dot {
+  width:6px; height:6px; border-radius:50%; background: var(--teal);
+  box-shadow: 0 0 0 4px rgba(63,208,189,0.18);
+}
+
+/* Search input */
+.gi .input {
+  height:36px; border-radius: var(--r-sm); padding: 0 12px;
+  background: var(--bg-elev2); border: 1px solid var(--border);
+  color: var(--text); font: 400 13px/1 var(--sans);
+  display:inline-flex; align-items:center; gap:8px; min-width: 200px;
+}
+
+/* Scrollbar lane */
+.gi .lane {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: max-content;
+  gap: 16px;
+  overflow-x: auto;
+  padding-right: 24px;
+}
+
+/* Star */
+.gi .star { color: var(--copper); }
+.gi .star-empty { color: var(--text-4); }

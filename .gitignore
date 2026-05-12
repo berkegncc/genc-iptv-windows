@@ -1,0 +1,56 @@
+# Dependencies
+node_modules/
+
+# Build
+dist/
+.vite/
+
+# Tauri
+src-tauri/target/
+src-tauri/Cargo.lock
+src-tauri/gen/
+src-tauri/WixTools/
+
+# IDE
+.vscode/
+.idea/
+*.suo
+*.user
+
+# OS
+Thumbs.db
+.DS_Store
+
+# Logs
+*.log
+npm-debug.log*
+
+# Env
+.env
+.env.local
+*.env.local
+
+# Rust
+**/*.rs.bk
+
+# TypeScript incremental build cache
+*.tsbuildinfo
+
+# Vite build artifacts (the .ts source IS the source of truth)
+vite.config.d.ts
+vite.config.js
+
+# Claude Code session/transcript files
+.claude/
+
+# Local snapshot backups created when iterating on UI (kept on disk so we
+# can quickly diff/revert, but never pushed)
+*.bak
+
+# Large mpv binary distribution — each is ~115 MB which exceeds GitHub's
+# 100 MB per-file limit, so they're fetched separately by every developer
+# (see BUILD.md "Önkoşullar" → "mpv binaries"). The small header files
+# under src-tauri/binaries/libmpv/include/ stay in tree for reference.
+src-tauri/binaries/libmpv/libmpv-2.dll
+src-tauri/binaries/mpv/mpv.exe
+src-tauri/binaries/mpv-x86_64-pc-windows-msvc.exe

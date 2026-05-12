@@ -1,0 +1,69 @@
+/* Global resets + body styles. tokens.css is loaded first; this builds on it. */
+
+*, *::before, *::after { box-sizing: border-box; }
+
+html, body, #root {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+}
+
+/* Window itself is transparent so the libmpv child window (attached to
+   our main HWND via wid) renders through. Each route's root container
+   paints its own opaque background; only Player.tsx leaves it transparent
+   so the video underneath becomes visible. */
+html, body {
+  background: transparent;
+  color: var(--text);
+  font-family: var(--sans);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  overflow: hidden;
+}
+
+#root {
+  display: flex;
+  flex-direction: column;
+  background: transparent;
+}
+
+/* Type helpers — flatten from .gi scope to global so any element can use them */
+.h-display { font-family: var(--serif); font-weight: 400; letter-spacing: -0.025em; line-height: 1.02; }
+.h-serif   { font-family: var(--serif); font-weight: 400; letter-spacing: -0.018em; line-height: 1.05; }
+.h-italic  { font-family: var(--serif); font-style: italic; font-weight: 400; letter-spacing: -0.025em; }
+.meta-caps {
+  font-family: var(--mono); font-size: 10px; letter-spacing: 0.16em;
+  text-transform: uppercase; color: var(--text-3);
+}
+.mono { font-family: var(--mono); }
+.hairline { height: 1px; background: var(--hairline); width: 100%; }
+
+/* Custom scrollbar */
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.08); border-radius: 8px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.16); }
+
+[data-theme="light"] ::-webkit-scrollbar-thumb { background: rgba(20,18,14,0.12); }
+[data-theme="light"] ::-webkit-scrollbar-thumb:hover { background: rgba(20,18,14,0.20); }
+
+/* Rail scrollers: still scrollable (wheel / trackpad swipe / arrow buttons),
+   but never paint a visible scrollbar — each rail has its own arrow UI for
+   navigation, the native bar is just visual noise underneath. */
+.no-scrollbar { scrollbar-width: none; -ms-overflow-style: none; }
+.no-scrollbar::-webkit-scrollbar { display: none; width: 0; height: 0; }
+
+/* Hover utility classes. Replace inline onMouseEnter/Leave handlers
+   where the only thing they do is set a single style property on
+   hover — CSS :hover is cheaper (no JS event), self-explanatory in
+   devtools, and survives keyboard focus when paired with :focus-visible. */
+.hover-bg-elev2 { transition: background 160ms ease; }
+.hover-bg-elev2:hover { background: var(--bg-elev2); }
+.hover-text-bright { transition: color 160ms ease; }
+.hover-text-bright:hover { color: #fff; }
+
+/* Drag region cursor */
+[data-tauri-drag-region] { cursor: default; }
+
+/* Disable text selection in chrome (title bar, sidebar, controls) */
+.no-select { user-select: none; -webkit-user-select: none; }

@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<title>Genç IPTV — Windows Masaüstü Tasarımı</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500&family=Instrument+Serif:ital@0;1&family=Newsreader:ital,opsz,wght@0,6..72,300;0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,300;1,6..72,400;1,6..72,500&family=Hanken+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Bodoni+Moda:ital,opsz,wght@0,6..96,400;0,6..96,500;0,6..96,600;1,6..96,400;1,6..96,500&family=Albert+Sans:wght@300;400;500;600;700&family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Inter+Tight:wght@400;500;600;700&family=Spectral:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Schibsted+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="tokens.css">
+<style>
+  html, body { margin: 0; padding: 0; background: #060809; color: #E8EDEC; font-family: 'Hanken Grotesk', 'Geist', system-ui, sans-serif; -webkit-font-smoothing: antialiased; }
+  html[data-theme="light"], html[data-theme="light"] body { background: #E8E1D2; color: #1F1B14; }
+  #root { min-height: 100vh; }
+  /* Hide scrollbars on the canvas itself but allow inside artboards */
+  ::-webkit-scrollbar { width: 8px; height: 8px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.08); border-radius: 8px; }
+  ::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.16); }
+</style>
+</head>
+<body>
+
+<div id="root"></div>
+
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+
+<script type="text/babel" src="design-canvas.jsx"></script>
+<script type="text/babel" src="tweaks-panel.jsx"></script>
+<script type="text/babel" src="shared.jsx"></script>
+<script type="text/babel" src="screen-onboarding.jsx"></script>
+<script type="text/babel" src="screen-home.jsx"></script>
+<script type="text/babel" src="screen-home-netflix.jsx"></script>
+<script type="text/babel" src="screen-channels.jsx"></script>
+<script type="text/babel" src="screen-films-series.jsx"></script>
+<script type="text/babel" src="screen-player.jsx"></script>
+<script type="text/babel" src="screen-extras.jsx"></script>
+<script type="text/babel" src="screen-mini.jsx"></script>
+
+<script type="text/babel">
+const { useState, useEffect } = React;
+const { DesignCanvas, DCSection, DCArtboard } = window;
+
+// Window frame around each artboard for "Windows app" feel
+const WindowFrame = ({ width, height, children, label }) => (
+  <div style={{
+    width, height,
+    background: 'var(--bg)',
+    borderRadius: 8,
+    overflow: 'hidden',
+    boxShadow: '0 30px 80px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.04) inset',
+  }}>
+    {children}
+  </div>
+);
+
+const TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
+  "accent": {
+    "value": "teal",
+    "color": "#3FD0BD"
+  },
+  "type": "archive",
+  "showAnnotations": true,
+  "compactCanvas": false,
+  "theme": "light"
+}/*EDITMODE-END*/;
+
+function App() {
+  const [t, setTweak] = useTweaks(TWEAK_DEFAULTS);
+  const accentKey = (t.accent && typeof t.accent === 'object') ? t.accent.value : t.accent;
+
+  useEffect(() => {
+    document.documentElement.dataset.accent = accentKey;
+  }, [accentKey]);
+
+  useEffect(() => {
+    document.documentElement.dataset.type = t.type;
+  }, [t.type]);
+
+  useEffect(() => {
+    document.documentElement.dataset.theme = t.theme;
+  }, [t.theme]);
+
+  // Sizes — desktop app at 1440 (recommended) and 1024 (compact)
+  const W_LG = 1440, H_LG = 900;
+  const W_MD = 1024, H_MD = 640;
+
+  const {
+    OnboardingStep1, OnboardingStep2, OnboardingStep3, SyncOverlay,
+    HomeScreen, ChannelsCategoryScreen, ChannelsListScreen,
+    FilmsGridScreen, FilmDetailScreen, SeriesGridScreen, SeriesDetailScreen,
+    PlayerWindowedScreen, PlayerFullscreenScreen,
+    FavoritesScreen, FavoritesEmptyScreen, SearchPaletteScreen, SettingsScreen,
+    MiniPlayerWidget, ComponentsScreen,
+    HomeNetflixA, HomeNetflixB, HomeNetflixC, HomeNetflixD,
+  } = window;
+
+  return (
+    <>
+      <DesignCanvas
+        title="Genç IPTV — Windows Masaüstü"
+        subtitle="14 ekran · dark teması · custom title bar · 1440×900 hedef · responsive 1024×640"
+      >
+        <DCSection id="00-system" title="00 · Tasarım sistemi" subtitle="Renk, tipografi, bileşen kütüphanesi">
+          <DCArtboard id="components" label="A · Bileşen kütüphanesi" width={W_LG} height={1280}>
+            <ComponentsScreen />
+          </DCArtboard>
+        </DCSection>
+
+        <DCSection id="01-onboarding" title="01 · Onboarding" subtitle="3 adımlı ilk kurulum sihirbazı + auto-sync gate">
+          <DCArtboard id="onb-1" label="A · Hoş geldin" width={W_LG} height={H_LG}>
+            <WindowFrame width={W_LG} height={H_LG}><OnboardingStep1 /></WindowFrame>
+          </DCArtboard>
+          <DCArtboard id="onb-2" label="B · Playlist ekle (Xtream)" width={W_LG} height={H_LG}>
+            <WindowFrame width={W_LG} height={H_LG}><OnboardingStep2 /></WindowFrame>
+          </DCArtboard>
+          <DCArtboard id="onb-3" label="C · Profil" width={W_LG} height={H_LG}>
+            <WindowFrame width={W_LG} height={H_LG}><OnboardingStep3 /></WindowFrame>
+          </DCArtboard>
+          <DCArtboard id="sync" label="D · Auto-sync overlay" width={W_LG} height={H_LG}>
+            <WindowFrame width={W_LG} height={H_LG}><SyncOverlay /></WindowFrame>
+          </DCArtboard>
+        </DCSection>
+
+        <DCSection id="02-home" title="02 · Anasayfa" subtitle="Yatay rail dashboard · editorial başlık · marquee + progress kartlar">
+          <DCArtboard id="home-lg" label="A · Anasayfa · 1440×900" width={W_LG} height={H_LG}>
+            <WindowFrame width={W_LG} height={H_LG}><HomeScreen /></WindowFrame>
+          </DCArtboard>
+          <DCArtboard id="home-md" label="B · Anasayfa · 1024×640 (mini sidebar)" width={W_MD} height={H_MD}>
+            <WindowFrame width={W_MD} height={H_MD}><HomeScreen mini /></WindowFrame>
+          </DCArtboard>
+        </DCSection>
+
+        <DCSection id="02b-netflix" title="02b · Anasayfa · Netflix tarzı varyantlar" subtitle="4 yön · cinematic billboard · top 10 · editorial hibrit · wide tile">
+          <DCArtboard id="nfx-a" label="A · Klasik Billboard · saf Netflix" width={W_LG} height={H_LG}>
+            <WindowFrame width={W_LG} height={H_LG}><HomeNetflixA /></WindowFrame>
+          </DCArtboard>
+          <DCArtboard id="nfx-b" label="B · Top 10 + cinematic hero" width={W_LG} height={H_LG}>
+            <WindowFrame width={W_LG} height={H_LG}><HomeNetflixB /></WindowFrame>
+          </DCArtboard>
+          <DCArtboard id="nfx-c" label="C · Editorial × Netflix hibrit" width={W_LG} height={H_LG}>
+            <WindowFrame width={W_LG} height={H_LG}><HomeNetflixC /></WindowFrame>
+          </DCArtboard>
+          <DCArtboard id="nfx-d" label="D · Wide tile · Apple TV+ hibrit" width={W_LG} height={H_LG}>
+            <WindowFrame width={W_LG} height={H_LG}><HomeNetflixD /></WindowFrame>
+          </DCArtboard>
+        </DCSection>
+
+        <DCSection id="03-channels" title="03 · Kanallar" subtitle="Kategori picker (glyph row) + canlı kanal listesi (EPG ile)">
+          <DCArtboard id="ch-cat" label="A · Kategori picker" width={W_LG} height={H_LG}>
+            <WindowFrame width={W_LG} height={H_LG}><ChannelsCategoryScreen /></WindowFrame>
+          </DCArtboard>
+          <DCArtboard id="ch-list" label="B · Kanal listesi · Ulusal" width={W_LG} height={H_LG}>
+            <WindowFrame width={W_LG} height={H_LG}><ChannelsListScreen /></WindowFrame>
+          </DCArtboard>
+        </DCSection>
+
+        <DCSection id="04-films" title="04 · Filmler" subtitle="VOD grid + sıralama/filtre · film detay (TMDB backdrop, oyuncular, benzerler)">
+          <DCArtboard id="film-grid" label="A · Film grid" width={W_LG} height={H_LG}>
+            <WindowFrame width={W_LG} height={H_LG}><FilmsGridScreen /></WindowFrame>
+          </DCArtboard>
+          <DCArtboard id="film-detail" label="B · Film detay · Dune: Part Two" width={W_LG} height={1180}>
+            <WindowFrame width={W_LG} height={1180}><FilmDetailScreen /></WindowFrame>
+          </DCArtboard>
+        </DCSection>
+
+        <DCSection id="05-series" title="05 · Diziler" subtitle="Dizi posteri grid · detay sayfasında sezon seçici + bölüm listesi">
+          <DCArtboard id="ser-grid" label="A · Dizi grid" width={W_LG} height={H_LG}>
+            <WindowFrame width={W_LG} height={H_LG}><SeriesGridScreen /></WindowFrame>
+          </DCArtboard>
+          <DCArtboard id="ser-detail" label="B · Dizi detay · Severance · S2" width={W_LG} height={1240}>
+            <WindowFrame width={W_LG} height={1240}><SeriesDetailScreen /></WindowFrame>
+          </DCArtboard>
+        </DCSection>
+
+        <DCSection id="06-player" title="06 · Live Player" subtitle="Pencereli + tam ekran modlar · auto-hide alt bar · klavye kısayolları">
+          <DCArtboard id="play-w" label="A · Windowed (üst/alt bar)" width={W_LG} height={H_LG}>
+            <WindowFrame width={W_LG} height={H_LG}><PlayerWindowedScreen /></WindowFrame>
+          </DCArtboard>
+          <DCArtboard id="play-fs" label="B · Tam ekran" width={W_LG} height={H_LG}>
+            <WindowFrame width={W_LG} height={H_LG}><PlayerFullscreenScreen /></WindowFrame>
+          </DCArtboard>
+        </DCSection>
+
+        <DCSection id="07-mini" title="07 · Mini player widget" subtitle="320×180 (varsayılan) · always-on-top toggle · kapatma + büyütme">
+          <DCArtboard id="mini-lg" label="A · 380w (büyük)" width={400} height={300}>
+            <div style={{ padding: 10 }}><MiniPlayerWidget size="lg" state="playing" /></div>
+          </DCArtboard>
+          <DCArtboard id="mini-md" label="B · 320w (varsayılan)" width={340} height={260}>
+            <div style={{ padding: 10 }}><MiniPlayerWidget size="md" state="playing" /></div>
+          </DCArtboard>
+          <DCArtboard id="mini-sm" label="C · 280w (kompakt, durdurulmuş)" width={300} height={240}>
+            <div style={{ padding: 10 }}><MiniPlayerWidget size="sm" state="paused" /></div>
+          </DCArtboard>
+        </DCSection>
+
+        <DCSection id="08-favorites" title="08 · Favoriler" subtitle="3 sekme: Kanallar · Filmler · Diziler · empty state">
+          <DCArtboard id="fav-ch" label="A · Kanallar sekmesi" width={W_LG} height={H_LG}>
+            <WindowFrame width={W_LG} height={H_LG}><FavoritesScreen /></WindowFrame>
+          </DCArtboard>
+          <DCArtboard id="fav-empty" label="B · Filmler · empty state" width={W_LG} height={H_LG}>
+            <WindowFrame width={W_LG} height={H_LG}><FavoritesEmptyScreen /></WindowFrame>
+          </DCArtboard>
+        </DCSection>
+
+        <DCSection id="09-search" title="09 · Arama" subtitle="Ctrl+K command palette · debounced · kategori bazlı sonuç grupları">
+          <DCArtboard id="search" label="A · Command palette" width={W_LG} height={H_LG}>
+            <WindowFrame width={W_LG} height={H_LG}><SearchPaletteScreen /></WindowFrame>
+          </DCArtboard>
+        </DCSection>
+
+        <DCSection id="10-settings" title="10 · Ayarlar" subtitle="5 alt-bölüm · Hesap · Playlist · Oynatıcı · Altyazı · Tema & Renk">
+          <DCArtboard id="set-theme" label="A · Tema & Renk" width={W_LG} height={H_LG}>
+            <WindowFrame width={W_LG} height={H_LG}><SettingsScreen section="theme" /></WindowFrame>
+          </DCArtboard>
+          <DCArtboard id="set-profile" label="B · Hesap & Profil" width={W_LG} height={H_LG}>
+            <WindowFrame width={W_LG} height={H_LG}><SettingsScreen section="profile" /></WindowFrame>
+          </DCArtboard>
+          <DCArtboard id="set-playlist" label="C · Playlist yönetimi" width={W_LG} height={H_LG}>
+            <WindowFrame width={W_LG} height={H_LG}><SettingsScreen section="playlist" /></WindowFrame>
+          </DCArtboard>
+          <DCArtboard id="set-player" label="D · Oynatıcı" width={W_LG} height={H_LG}>
+            <WindowFrame width={W_LG} height={H_LG}><SettingsScreen section="player" /></WindowFrame>
+          </DCArtboard>
+          <DCArtboard id="set-subs" label="E · Altyazı (canlı önizleme)" width={W_LG} height={1100}>
+            <WindowFrame width={W_LG} height={1100}><SettingsScreen section="subs" /></WindowFrame>
+          </DCArtboard>
+        </DCSection>
+      </DesignCanvas>
+
+      <TweaksPanel>
+        <TweakSection title="Tema">
+          <TweakRadio
+            label="Theme"
+            value={t.theme}
+            options={[
+              { value: 'dark',  label: 'Koyu' },
+              { value: 'light', label: 'Açık' },
+            ]}
+            onChange={v => setTweak('theme', v)}
+          />
+        </TweakSection>
+        <TweakSection title="Tipografi sistemi">
+          <TweakSelect
+            label="Type system"
+            value={t.type}
+            options={[
+              { value: 'magazine', label: 'Magazine — Newsreader · Hanken' },
+              { value: 'couture',  label: 'Couture — Bodoni Moda · Albert' },
+              { value: 'boutique', label: 'Boutique — Cormorant · Inter Tight' },
+              { value: 'archive',  label: 'Archive — Spectral · Schibsted' },
+              { value: 'default',  label: 'Eski — Instrument · Geist' },
+            ]}
+            onChange={v => setTweak('type', v)}
+          />
+        </TweakSection>
+        <TweakSection title="Vurgu rengi">
+          <TweakColor
+            label="Accent"
+            value={t.accent}
+            options={[
+              { value: 'teal',   color: '#3FD0BD' },
+              { value: 'copper', color: '#C68A5C' },
+              { value: 'purple', color: '#9D7BD8' },
+              { value: 'red',    color: '#E07A6F' },
+              { value: 'blue',   color: '#6FA8E0' },
+              { value: 'green',  color: '#86C97A' },
+              { value: 'yellow', color: '#D4B86A' },
+              { value: 'gray',   color: '#B0BAB8' },
+            ]}
+            onChange={v => setTweak('accent', v)}
+          />
+        </TweakSection>
+      </TweaksPanel>
+    </>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+</script>
+
+</body>
+</html>
