@@ -9,7 +9,6 @@
  */
 import { useNavigate } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
-import { useQueryClient } from "@tanstack/react-query";
 import { useActivePlaylist } from "../../features/playlist/usePlaylists";
 import {
   useContinueWatching,
@@ -28,7 +27,6 @@ import { ChannelLogo } from "../../components/ui/ChannelLogo";
 import { PosterCard, toneFor } from "../../components/ui/PosterCard";
 import { ResumeCard } from "../../components/ui/ResumeCard";
 import { t, tFmt } from "../../lib/i18n";
-import { vodApi } from "../../lib/tauri";
 import type {
   Channel,
   ContinueWatching,
@@ -144,7 +142,6 @@ export function useRotatingHero(
   fallback: VodItem[],
   intervalMs: number = HERO_ROTATION_MS,
 ): RotatingHero {
-  const qc = useQueryClient();
   const { data: randomPool = [] } = useRandomMovies(playlistId, 20);
   // Random pool is the canonical source. Fallback only kicks in for the
   // tiny window before the query resolves so the hero never renders
@@ -198,39 +195,6 @@ export function useRotatingHero(
       }
     }
   }, [heroPool]);
-
-  // Just-in-time backdrop prefetch: when the rotator surfaces a film
-  // with no `backdropUrl`, run the lean TMDB+Fanart cascade for that
-  // single id and patch the result back into the random-pool cache
-  // via `setQueriesData` (NOT `invalidate` — invalidation would force
-  // SQLite's `ORDER BY RANDOM()` to reshuffle and the visible pool
-  // would change mid-session).
-  //
-  // `attemptedRef` makes this idempotent per session — films TMDB
-  // has no match for (Turkish-only content) are tried once and then
-  // left alone instead of looping forever.
-  const attemptedRef = useRef<Set<string>>(new Set());
-  const heroId = hero?.id;
-  const heroBackdrop = hero?.backdropUrl;
-  useEffect(() => {
-    if (!heroId) return;
-    if (heroBackdrop) return;
-    if (attemptedRef.current.has(heroId)) return;
-    attemptedRef.current.add(heroId);
-    vodApi
-      .prefetchMovieBackdrop(heroId)
-      .then((updated) => {
-        if (!updated || !updated.backdropUrl) return;
-        qc.setQueriesData<VodItem[] | undefined>(
-          { queryKey: ["vod", "random-movies"] },
-          (old) =>
-            old?.map((m) => (m.id === updated.id ? updated : m)),
-        );
-      })
-      .catch(() => {
-        // Silent — frontend already renders a blurred-poster fallback.
-      });
-  }, [heroId, heroBackdrop, qc]);
 
   return {
     hero,
@@ -529,12 +493,9 @@ export function HeroBackdrop({
       )}
 
       {/* Layer 2 — the real widescreen backdrop, layered on top of the
-          poster bridge. Cross-faded on URL change so that:
-            • Rotation lands on a film whose backdrop loads from cache →
-              fades in instantly over the poster.
-            • The just-in-time TMDB prefetch in useRotatingHero swaps
-              `imageUrl` mid-life for the same hero → backdrop fades
-              in over the poster instead of flashing. */}
+          poster bridge. Cross-faded on URL change so rotation lands on
+          a film whose backdrop loads from cache → fades in instantly
+          over the poster, no flash to bg. */}
       <HeroCrossFade keyId={imageUrl ?? "none"} durationMs={500}>
         {imageUrl && (
           <img

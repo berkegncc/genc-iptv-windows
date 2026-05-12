@@ -246,15 +246,7 @@ const STRINGS = {
   "settings.playlists.btn_activate": "Aktif Yap",
   "settings.playlists.btn_sync": "Şimdi Sync Et",
   "settings.playlists.btn_syncing": "Senkronize ediliyor...",
-  "settings.playlists.btn_enrich": "Posterleri Tamamla",
-  "settings.playlists.btn_enriching": "TMDB taranıyor…",
-  "settings.playlists.btn_enrich_tooltip":
-    "Eksik posterleri ve oyuncu listelerini TMDB'den getir. GENC_TMDB_API_KEY ortam değişkeni gerektirir.",
   "settings.playlists.last_sync_never": "Hiç senkronize edilmedi",
-  "settings.playlists.tmdb_disabled":
-    "TMDB enrichment kapalı. Etkinleştirmek için GENC_TMDB_API_KEY ortam değişkenini ayarla ve uygulamayı yeniden başlat.",
-  "settings.playlists.enrich_summary":
-    "{movies}/{moviesTotal} film · {series}/{seriesTotal} dizi zenginleştirildi.",
 
   // ── Settings · Theme ────────────────────────────────────────────────
   "settings.theme.eyebrow": "Tema · canlı önizleme",

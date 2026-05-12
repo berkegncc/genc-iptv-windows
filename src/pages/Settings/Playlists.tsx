@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { useMutation } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 import { open as openDialog } from "@tauri-apps/plugin-dialog";
 import {
@@ -9,8 +8,8 @@ import {
   useDeletePlaylist,
 } from "../../features/playlist/usePlaylists";
 import { Button } from "../../components/ui/Button";
-import { vodApi, type EnrichmentReport, type Playlist } from "../../lib/tauri";
-import { t, tFmt } from "../../lib/i18n";
+import { type Playlist } from "../../lib/tauri";
+import { t } from "../../lib/i18n";
 
 export default function PlaylistsSettings() {
   const { data: playlists = [], isLoading } = usePlaylists();
@@ -89,9 +88,6 @@ function PlaylistRow({ playlist }: { playlist: Playlist }) {
   const sync = useSyncPlaylist();
   const setActive = useSetActivePlaylist();
   const remove = useDeletePlaylist();
-  const enrich = useMutation<EnrichmentReport, Error, number>({
-    mutationFn: (id: number) => vodApi.enrichPosters(id),
-  });
 
   const lastSync =
     playlist.lastSyncedAt > 0
@@ -170,16 +166,6 @@ function PlaylistRow({ playlist }: { playlist: Playlist }) {
             : t("settings.playlists.btn_sync")}
         </Button>
         <Button
-          variant="ghost"
-          onClick={() => enrich.mutate(playlist.id)}
-          disabled={enrich.isPending}
-          title={t("settings.playlists.btn_enrich_tooltip")}
-        >
-          {enrich.isPending
-            ? t("settings.playlists.btn_enriching")
-            : t("settings.playlists.btn_enrich")}
-        </Button>
-        <Button
           variant="danger"
           onClick={() => {
             if (confirmingDelete) {
@@ -197,36 +183,7 @@ function PlaylistRow({ playlist }: { playlist: Playlist }) {
         </Button>
       </div>
 
-      {enrich.data && (
-        <div
-          style={{
-            padding: "10px 14px",
-            borderRadius: 8,
-            background: enrich.data.skippedDisabled
-              ? "var(--bg-elev2)"
-              : "color-mix(in oklab, var(--accent) 8%, transparent)",
-            border: `1px solid ${
-              enrich.data.skippedDisabled
-                ? "var(--border)"
-                : "color-mix(in oklab, var(--accent) 30%, transparent)"
-            }`,
-            color: enrich.data.skippedDisabled ? "var(--text-3)" : "var(--text-2)",
-            fontSize: 12,
-            lineHeight: 1.5,
-          }}
-        >
-          {enrich.data.skippedDisabled
-            ? t("settings.playlists.tmdb_disabled")
-            : tFmt("settings.playlists.enrich_summary", {
-                movies: enrich.data.moviesEnriched,
-                moviesTotal: enrich.data.moviesSeen,
-                series: enrich.data.seriesEnriched,
-                seriesTotal: enrich.data.seriesSeen,
-              })}
-        </div>
-      )}
-
-      {(sync.error || remove.error || setActive.error || enrich.error) && (
+      {(sync.error || remove.error || setActive.error) && (
         <div
           style={{
             padding: "10px 14px",
@@ -239,8 +196,7 @@ function PlaylistRow({ playlist }: { playlist: Playlist }) {
         >
           {sync.error?.message ||
             remove.error?.message ||
-            setActive.error?.message ||
-            enrich.error?.message}
+            setActive.error?.message}
         </div>
       )}
     </div>

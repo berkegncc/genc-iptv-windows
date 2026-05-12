@@ -114,9 +114,8 @@ pub fn enrich_vod(item: &mut VodItem, info: &VodInfoResponse, playlist: &Playlis
             item.genres = split_csv(Some(genre));
         }
         if let Some(cast) = block.cast.as_deref().filter(|s| !s.is_empty()) {
-            // Xtream gives us bare names — no headshots. TMDB enrichment
-            // later will overwrite this list with photo'd entries when it
-            // can find a match.
+            // Xtream gives us bare names — no headshots; the detail
+            // page falls back to initials when `photo_url` is null.
             item.cast = split_csv_to_cast(Some(cast));
         }
         if let Some(rating) = block.rating.as_ref().and_then(value_to_double) {
@@ -305,9 +304,9 @@ fn split_csv(raw: Option<&str>) -> Vec<String> {
 }
 
 /// Same split as [`split_csv`], but wraps each name in a [`CastMember`]
-/// with no photo. Used for cast lists coming from Xtream (which never
-/// ship headshots). The poster enricher later replaces these with
-/// TMDB-derived entries when it can find a matching credit.
+/// with no photo. Used for cast lists coming from Xtream — the
+/// provider never ships headshots, so the detail page renders the
+/// fallback initials avatar for every entry.
 fn split_csv_to_cast(raw: Option<&str>) -> Vec<CastMember> {
     split_csv(raw).into_iter().map(CastMember::name_only).collect()
 }

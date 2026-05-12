@@ -114,8 +114,9 @@ pub struct NewProgram {
 /// Persisted as JSON in `vod_items.cast_json` / `series.cast_json`. The
 /// JSON is decoded by a tolerant parser in `data::rows` that also accepts
 /// the legacy `Vec<String>` shape — rows synced before this change carry
-/// only names and deserialize with `photo_url: None`. Re-running the
-/// poster enricher fills in photos from TMDB.
+/// only names and deserialize with `photo_url: None`. Xtream itself
+/// never supplies headshots, so most rows stay name-only and the
+/// detail page falls back to initials.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct CastMember {

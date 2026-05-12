@@ -94,7 +94,7 @@ function Detail({
   // Prefer the proper widescreen backdrop; fall back to the poster
   // (heavily blurred + brightened-down so the cropping looks deliberate).
   // That way EVERY film gets a dynamic backdrop tied to its art, even
-  // when TMDB has no match and Xtream didn't ship a backdrop_path.
+  // when Xtream didn't ship a backdrop_path.
   const heroBackdrop = movie.backdropUrl ?? movie.posterUrl ?? null;
   const isPosterFallback =
     movie.backdropUrl == null && movie.posterUrl != null;
@@ -140,13 +140,12 @@ function Detail({
         </div>
 
         {/* Image layer, cross-faded on URL change. The user's enrich_movie
-            mutation can swap `backdropUrl` mid-render (DB had a stale
-            w780 entry, the per-detail TMDB+Fanart cascade returned a
-            fresher w1280) — without this wrapper the swap looked like a
-            second backdrop suddenly appearing milliseconds after open.
-            HeroCrossFade keeps the old layer mounted until the new one
-            has faded in on top, so the swap reads as a graceful
-            reveal instead of a flash. */}
+            mutation can swap `backdropUrl` mid-render once the Xtream
+            vod_info detail call returns — without this wrapper the swap
+            looked like a second backdrop suddenly appearing milliseconds
+            after open. HeroCrossFade keeps the old layer mounted until
+            the new one has faded in on top, so the swap reads as a
+            graceful reveal instead of a flash. */}
         <HeroCrossFade keyId={heroBackdrop ?? "none"} durationMs={500}>
           {heroBackdrop && (
             <img
@@ -526,8 +525,8 @@ function CastChip({ member }: { member: CastMember }) {
           <img
             src={member.photoUrl}
             alt={member.name}
-            // If TMDB has the row but no headshot (or it 404s), the
-            // initials underneath are still visible — the image just
+            // If the cast row has a URL but it 404s, the initials
+            // underneath are still visible — the image just
             // disappears, not the whole chip.
             onError={(e) => {
               (e.currentTarget as HTMLImageElement).style.display = "none";

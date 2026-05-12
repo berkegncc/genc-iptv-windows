@@ -5,6 +5,11 @@ yüz, doğrudan ana pencereye `wid` ile attach edilmiş **libmpv2** video
 motoru. Xtream Codes ve M3U playlist'lerini, Canlı kanalları, VOD
 (film + dizi), EPG ve "Devam Et" akışını destekler.
 
+Poster ve backdrop'lar **doğrudan Xtream sağlayıcısından** gelir;
+program herhangi bir harici metadata servisine (TMDB, Fanart.tv vb.)
+bağlanmaz, bu yüzden fork eden herkes uygulamayı kendi API anahtarı
+almadan kurup çalıştırabilir.
+
 ## Özellikler
 
 - **VOD oynatıcı** — film + dizi, kaldığın yerden devam, otomatik
@@ -15,8 +20,9 @@ motoru. Xtream Codes ve M3U playlist'lerini, Canlı kanalları, VOD
 - **Anasayfa** — 5 farklı layout (Billboard, Top10, Editorial Hybrid,
   Wide Tile, Editorial Rails), session-bazlı rotating hero, "Önerilen
   Filmler", "Devam Et" ve "İzledikleriniz" rail'leri.
-- **TMDB + Fanart.tv enrichment** — Türkçe başlık parser, textless +
-  16:9 backdrop önceliği, lazy per-detail enrichment.
+- **Xtream metadata** — playlist sync'i sırasında provider'ın sağladığı
+  poster, backdrop, açıklama, oyuncu ve tür bilgisi doğrudan kullanılır;
+  film detayında ek `vod_info` çağrısıyla bilgi tamamlanır.
 - **Ayarlar** — Oynatma (codec / decoder / cache / network timeout),
   Altyazı (font / renk / kenar / pozisyon), Tema, Playlist yönetimi.
 - **Mini player** — 420×240 always-on-top tile, playback devam eder.
@@ -45,19 +51,6 @@ npm run tauri dev
 İlk Cargo derlemesi 3-5 dk sürebilir; sonraki incremental build'ler
 ~15-30 sn.
 
-## Ortam değişkenleri
-
-`.env` dosyasını proje kökünde oluştur:
-
-```
-TMDB_API_KEY=<api.themoviedb.org/v3 key>
-FANART_TV_API_KEY=<webservice.fanart.tv v3 key>
-```
-
-İkisi de **opsiyonel** — yoksa enrichment devre dışı kalır, app yine
-çalışır. TMDB ücretsiz key veriyor; Fanart ücretsiz "personal" key
-isteyebilirsiniz.
-
 ## Yapı
 
 ```
@@ -69,9 +62,9 @@ src/                  React frontend
   lib/                Tauri bindings, i18n
 src-tauri/src/        Rust backend
   commands/           Tauri command surface
-  source/             Data sources (mpv, xtream, m3u, tmdb, fanart_tv, ...)
+  source/             Data sources (mpv, xtream, m3u, xmltv, ...)
   data/               SQLite + models + row mapping
-  service/            Sync + enrichment services
+  service/            Sync service (playlist + EPG)
 ```
 
 ## Build (release)

@@ -137,9 +137,8 @@ export function proxiedUrl(
 
 export type VodKind = "MOVIE" | "SERIES";
 
-/** A single cast member. `photoUrl` is null when the data came from
- *  Xtream (no headshots) or from a row that hasn't been TMDB-enriched
- *  yet — the detail page falls back to initials in that case. */
+/** A single cast member. `photoUrl` is null when Xtream didn't supply
+ *  a headshot — the detail page falls back to initials in that case. */
 export type CastMember = {
   name: string;
   photoUrl: string | null;
@@ -212,13 +211,6 @@ export const vodApi = {
   /** Lazy fetch full info from upstream + persist; idempotent. */
   enrichMovie: (id: string) => invoke<VodItem>("enrich_movie", { id }),
 
-  /** Lean per-hero backdrop fetch. Only fills `backdropUrl` if the row
-   *  is missing one. Cheap enough to fire from the home hero rotator;
-   *  returns the updated row so the caller can `setQueryData` it into
-   *  the random-pool cache without invalidating (and thus reshuffling). */
-  prefetchMovieBackdrop: (id: string) =>
-    invoke<VodItem | null>("prefetch_movie_backdrop", { id }),
-
   series: (playlistId: number, query?: string, categoryId?: string | null) =>
     invoke<SeriesItem[]>("get_series_list", {
       playlistId,
@@ -238,9 +230,6 @@ export const vodApi = {
   categories: (playlistId: number, kind: VodKind) =>
     invoke<VodCategoryWithCount[]>("get_vod_categories", { playlistId, kind }),
 
-  enrichPosters: (playlistId: number) =>
-    invoke<EnrichmentReport>("enrich_playlist_posters", { playlistId }),
-
   recentMovies: (playlistId: number, limit?: number) =>
     invoke<VodItem[]>("get_recent_movies", {
       playlistId,
@@ -257,14 +246,6 @@ export const vodApi = {
       limit: limit ?? null,
       seed: seed ?? null,
     }),
-};
-
-export type EnrichmentReport = {
-  moviesSeen: number;
-  moviesEnriched: number;
-  seriesSeen: number;
-  seriesEnriched: number;
-  skippedDisabled: boolean;
 };
 
 // ─── Favorites ──────────────────────────────────────────────────────────────

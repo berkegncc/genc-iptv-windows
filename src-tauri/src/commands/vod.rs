@@ -10,9 +10,7 @@ use tauri::State;
 use crate::data::models::{Episode, Series, VodCategory, VodItem, VodKind};
 use crate::data::rows::{EpisodeRow, PlaylistRow, SeriesRow, VodItemRow};
 use crate::data::Db;
-use crate::service::{poster_enricher, sync_service};
-use crate::service::poster_enricher::EnrichmentReport;
-use crate::source::tmdb::TmdbClient;
+use crate::service::sync_service;
 use crate::source::xtream;
 
 use super::{CommandError, CommandResult};
@@ -122,111 +120,8 @@ pub async fn enrich_movie(db: State<'_, Db>, id: String) -> CommandResult<VodIte
         }
     }
 
-    // Per-detail TMDB top-up: if no cast member has a headshot URL yet,
-    // do a single TMDB lookup right now and merge in the photo'd cast.
-    // This is what makes the cast section light up with portraits the
-    // first time the user opens a film. The bulk `enrich_playlist`
-    // backfills the rest in the background.
-    let needs_tmdb_cast = item.cast.is_empty()
-        || item.cast.iter().all(|c| c.photo_url.is_none());
-    if needs_tmdb_cast {
-        let tmdb = TmdbClient::from_env();
-        if tmdb.enabled() {
-            match tmdb.lookup_movie(&item.title, item.year).await {
-                Ok(Some(hit)) => {
-                    if !hit.cast.is_empty() {
-                        item.cast = hit.cast;
-                    }
-                    // Fill backdrop / poster / plot if Xtream left them empty.
-                    if item.backdrop_url.as_deref().unwrap_or("").is_empty() {
-                        item.backdrop_url = hit.backdrop_url;
-                    }
-                    if item.poster_url.as_deref().unwrap_or("").is_empty() {
-                        item.poster_url = hit.poster_url;
-                    }
-                    if item.plot.as_deref().unwrap_or("").is_empty() {
-                        item.plot = hit.plot;
-                    }
-                    if item.rating.is_none() {
-                        item.rating = hit.rating;
-                    }
-                }
-                Ok(None) => {
-                    tracing::debug!(%id, title = %item.title, "tmdb: no match");
-                }
-                Err(e) => {
-                    tracing::warn!(error = %e, %id, "tmdb lookup failed");
-                }
-            }
-        }
-    }
-
     persist_movie(&db.pool, &item).await?;
     Ok(item)
-}
-
-/// Lean per-hero backdrop fetch. Runs the same TMDB + Fanart cascade
-/// as `enrich_movie` but **only** fills `backdrop_url` — it skips the
-/// Xtream `vod_info` call so it stays cheap enough to fire from the
-/// home hero rotator each time it surfaces a film with no widescreen
-/// art. Returns the (possibly updated) `VodItem` so the frontend can
-/// patch its random-pool cache via `setQueryData` without invalidating
-/// the whole query (which would reshuffle the pool).
-///
-/// No-op when:
-///   - the id doesn't resolve to a row
-///   - the row already has a non-empty backdrop_url
-///   - TMDB is disabled, or it (+ Fanart) returns no backdrop
-#[tauri::command]
-pub async fn prefetch_movie_backdrop(
-    db: State<'_, Db>,
-    id: String,
-) -> CommandResult<Option<VodItem>> {
-    let row: Option<VodItemRow> = sqlx::query_as(
-        r#"
-        SELECT id, playlist_id, title, poster_url, backdrop_url, stream_url, kind,
-               year, rating, plot, genres_json, cast_json, director,
-               duration_secs, category_id, added_at
-        FROM vod_items WHERE id = ?
-        "#,
-    )
-    .bind(&id)
-    .fetch_optional(&db.pool)
-    .await?;
-    let Some(row) = row else { return Ok(None); };
-    let mut item = row.into_domain();
-
-    if item
-        .backdrop_url
-        .as_deref()
-        .map(|s| !s.is_empty())
-        .unwrap_or(false)
-    {
-        // Already populated — nothing to do.
-        return Ok(Some(item));
-    }
-
-    let tmdb = TmdbClient::from_env();
-    if !tmdb.enabled() {
-        return Ok(Some(item));
-    }
-    let hit = match tmdb.lookup_movie(&item.title, item.year).await {
-        Ok(Some(h)) => h,
-        _ => return Ok(Some(item)),
-    };
-    let Some(new_backdrop) = hit.backdrop_url else {
-        return Ok(Some(item));
-    };
-
-    sqlx::query("UPDATE vod_items SET backdrop_url = ? WHERE id = ?")
-        .bind(&new_backdrop)
-        .bind(&id)
-        .execute(&db.pool)
-        .await
-        .map_err(|e| CommandError::Message(e.to_string()))?;
-
-    item.backdrop_url = Some(new_backdrop);
-    Ok(Some(item))
 }
 
 // ─── Series + Episodes ───────────────────────────────────────────────────────
@@ -523,23 +418,6 @@ pub async fn get_recent_series(
     .fetch_all(&db.pool)
     .await?;
     Ok(rows.into_iter().map(SeriesRow::into_domain).collect())
-}
-
-// ─── TMDB enrichment ─────────────────────────────────────────────────────────
-
-/// Run the PosterEnricher across every VOD + Series row that's missing a
-/// poster or cast list. Idempotent — TMDB lookups run with a 6-way
-/// concurrency cap, attempted titles are deduped per call.
-///
-/// Disabled (no-op + `skippedDisabled: true`) when `GENC_TMDB_API_KEY` is
-/// unset in the runtime environment.
-#[tauri::command]
-pub async fn enrich_playlist_posters(
-    db: State<'_, Db>,
-    playlist_id: i64,
-) -> CommandResult<EnrichmentReport> {
-    let report = poster_enricher::enrich_playlist(&db.pool, playlist_id).await?;
-    Ok(report)
 }
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────

@@ -17,34 +17,10 @@ use source::proxy;
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
-    // Pull `.env` from the project root (or wherever cwd is) into the
-    // process env BEFORE anything else reads `std::env::var`. This is how
-    // optional config like `GENC_TMDB_API_KEY` reaches the TMDB enricher
-    // without forcing the user to set permanent system env vars during
-    // development. In a packaged release the .env doesn't exist next to
-    // the .exe — that's expected; the call returns Err and we ignore it.
-    let env_loaded = dotenvy::dotenv().ok();
-
     // Hold the file appender's WorkerGuard alive for the lifetime of the
     // process so the background flush thread sticks around. Dropping it
     // means buffered log lines never reach disk.
     let _log_guard = init_logging();
-
-    match env_loaded {
-        Some(path) => tracing::info!(target: "genc_iptv::boot", path = %path.display(), ".env loaded"),
-        None => tracing::debug!(target: "genc_iptv::boot", ".env not found, using process env only"),
-    }
-    // Mirror the TmdbClient resolution order so the boot log doesn't lie.
-    let tmdb_present = std::env::var("TMDB_API_KEY")
-        .ok()
-        .or_else(|| std::env::var("GENC_TMDB_API_KEY").ok())
-        .filter(|s| !s.is_empty())
-        .is_some();
-    tracing::info!(
-        target: "genc_iptv::boot",
-        tmdb_api_key = if tmdb_present { "configured" } else { "missing" },
-        "TMDB enrichment availability checked"
-    );
 
     tauri::Builder::default()
         // Single-instance lock comes first so the second-launch handler
@@ -140,13 +116,11 @@ pub fn run() {
             commands::vod::get_movies,
             commands::vod::get_movie,
             commands::vod::enrich_movie,
-            commands::vod::prefetch_movie_backdrop,
             commands::vod::get_series_list,
             commands::vod::get_series_one,
             commands::vod::get_episodes,
             commands::vod::sync_episodes_for_series,
             commands::vod::get_vod_categories,
-            commands::vod::enrich_playlist_posters,
             commands::vod::get_recent_movies,
             commands::vod::get_recent_series,
             commands::vod::get_random_movies,

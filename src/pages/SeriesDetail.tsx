@@ -259,8 +259,8 @@ function Hero({
 }) {
   const tone = toneFor(series.id);
   // Backdrop preference: real backdrop → blurred poster → tone gradient.
-  // Mirrors FilmDetail so every dizi gets ambient atmosphere even if
-  // TMDB doesn't have it.
+  // Mirrors FilmDetail so every dizi gets ambient atmosphere even when
+  // the upstream provider didn't supply a widescreen image.
   const heroBackdrop = series.backdropUrl ?? series.posterUrl ?? null;
   const isPosterFallback =
     series.backdropUrl == null && series.posterUrl != null;
