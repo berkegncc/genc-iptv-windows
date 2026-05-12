@@ -44,7 +44,9 @@
     "externalBin": [
       "binaries/mpv"
     ],
-    "resources": [],
+    "resources": {
+      "binaries/libmpv/libmpv-2.dll": "libmpv-2.dll"
+    },
     "fileAssociations": [
       {
         "ext": ["m3u", "m3u8"],
