@@ -11,7 +11,7 @@ Son güncelleme: 2026-05-09
 ## 0 · Felsefe (önemli — kafadan çıkarmaya gerek yok)
 
 **Windows-first, en iyi tool kullanılır.** Bu bir Windows masaüstü uygulamasıdır;
-mobil iptv kod tabanı (`C:/Users/berke/OneDrive/Masaüstü/claude projeler/genc_iptv_mobil`)
+mobil iptv kod tabanı (sibling repo, yerel referans)
 sadece **davranış kalıpları** için referans alınır:
 - Auto-sync gate (6 saat threshold)
 - Series ContinueWatching dedup (composite key)

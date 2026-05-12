@@ -118,7 +118,7 @@ const OnboardingStep2 = () => (
       <Field label="Görünen ad" value="Premium TR" />
       <Field label="Sunucu URL" value="http://server.example.com:8080" mono />
       <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap: 12 }}>
-        <Field label="Kullanıcı adı" value="berke_42" mono />
+        <Field label="Kullanıcı adı" value="kullanici_42" mono />
         <Field label="Parola" value="••••••••••••" mono />
       </div>
       <div style={{ display:'flex', alignItems:'center', gap: 12, padding: '12px 14px', borderRadius: 10, border: '1px solid var(--border)', background: 'var(--bg-elev)' }}>
