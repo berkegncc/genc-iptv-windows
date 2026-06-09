@@ -392,7 +392,7 @@ async fn load_playlist(pool: &SqlitePool, id: i64) -> Result<Option<Playlist>> {
     .fetch_optional(pool)
     .await?;
 
-    Ok(row.map(PlaylistRow::into_domain))
+    Ok(row.map(PlaylistRow::into_domain).transpose()?)
 }
 
 /// Replace all channels for a playlist atomically. Bulk insert in chunks of

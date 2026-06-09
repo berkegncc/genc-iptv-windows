@@ -440,8 +440,12 @@ async fn load_playlist_required(
     .await
     .map_err(|e| CommandError::Message(e.to_string()))?;
 
-    row.map(PlaylistRow::into_domain)
-        .ok_or_else(|| CommandError::Message(format!("Playlist {id} bulunamadı.")))
+    match row {
+        Some(r) => r
+            .into_domain()
+            .map_err(|e| CommandError::Message(e.to_string())),
+        None => Err(CommandError::Message(format!("Playlist {id} bulunamadı."))),
+    }
 }
 
 async fn persist_movie(pool: &SqlitePool, item: &VodItem) -> Result<(), CommandError> {

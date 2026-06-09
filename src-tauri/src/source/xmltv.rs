@@ -39,6 +39,7 @@ use quick_xml::reader::Reader;
 use std::io::{Cursor, Read};
 
 use crate::data::models::NewProgram;
+use crate::source::http::sanitize_url;
 
 /// One channel block from the XMLTV header. Currently unused for the Guide
 /// query (we join on `channels.epg_channel_id`) but kept so a future PR can
@@ -63,7 +64,7 @@ pub async fn fetch_and_parse(
     user_agent: Option<&str>,
     playlist_id: i64,
 ) -> Result<ParsedXmltv> {
-    tracing::info!(target: "genc_iptv::epg", %url, "fetching XMLTV");
+    tracing::info!(target: "genc_iptv::epg", url = %sanitize_url(url), "fetching XMLTV");
     let client = super::http::build_client(user_agent, false)
         .context("build epg http client")?;
     let resp = client

@@ -106,33 +106,6 @@ export const channelApi = {
     invoke<CategoryWithCount[]>("get_categories", { playlistId }),
 };
 
-// ─── Stream proxy ───────────────────────────────────────────────────────────
-
-let cachedProxyBase: string | null = null;
-
-/**
- * Local HTTP proxy base URL (e.g. `http://127.0.0.1:54321`). Wraps an
- * upstream stream URL by appending `?url=<encoded>` (+ optional `&ua=...`).
- * Cached for the app lifetime — the port is fixed once Rust starts.
- */
-export async function getProxyBase(): Promise<string> {
-  if (cachedProxyBase == null) {
-    cachedProxyBase = await invoke<string>("get_proxy_base");
-  }
-  return cachedProxyBase;
-}
-
-/** Build the proxied URL for an upstream stream URL. */
-export function proxiedUrl(
-  base: string,
-  upstreamUrl: string,
-  userAgent?: string | null,
-): string {
-  const params = new URLSearchParams({ url: upstreamUrl });
-  if (userAgent) params.set("ua", userAgent);
-  return `${base}/stream?${params.toString()}`;
-}
-
 // ─── VOD (movies + series + episodes) ───────────────────────────────────────
 
 export type VodKind = "MOVIE" | "SERIES";

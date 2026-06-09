@@ -10,7 +10,7 @@ use std::sync::Arc;
 use tauri::{Manager, State};
 use tokio::sync::Mutex;
 
-use crate::source::proxy::ProxyHandle;
+use crate::source::http::sanitize_url;
 
 #[cfg(target_os = "windows")]
 use crate::source::mpv_player::{Player, Track};
@@ -34,12 +34,6 @@ impl PlayerHandle {
     pub fn new() -> Self {
         Self::default()
     }
-}
-
-/// Returns `http://127.0.0.1:<port>` — kept for in-app preview/debug use.
-#[tauri::command]
-pub fn get_proxy_base(handle: State<'_, ProxyHandle>) -> String {
-    handle.base()
 }
 
 #[cfg(target_os = "windows")]
@@ -99,7 +93,7 @@ pub async fn play_stream(
         url
     };
 
-    tracing::info!(url = %url, ua = %ua, trust_all, "libmpv loadfile");
+    tracing::info!(url = %sanitize_url(&url), ua = %ua, trust_all, "libmpv loadfile");
     player
         .load_url(&url, Some(&ua), trust_all)
         .map_err(|e| CommandError::Message(format!("yayın yüklenemedi: {e:#}")))?;

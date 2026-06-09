@@ -47,6 +47,14 @@ vite.config.js
 # can quickly diff/revert, but never pushed)
 *.bak
 
+# Local-only working notes + UI design mockups. These have historically held
+# personal/sample data (usernames, local paths) and must never be pushed.
+status/
+design/
+
+# Local-only cargo config (holds a machine-specific target-dir path).
+src-tauri/.cargo/
+
 # Large mpv binary distribution — each is ~115 MB which exceeds GitHub's
 # 100 MB per-file limit, so they're fetched separately by every developer
 # (see BUILD.md "Önkoşullar" → "mpv binaries"). The small header files

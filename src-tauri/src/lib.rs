@@ -13,7 +13,6 @@ mod source;
 
 use commands::stream::PlayerHandle;
 use data::Db;
-use source::proxy;
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
@@ -39,14 +38,16 @@ pub fn run() {
         }))
         .plugin(tauri_plugin_store::Builder::default().build())
         .plugin(tauri_plugin_dialog::init())
-        .plugin(tauri_plugin_fs::init())
         .plugin(tauri_plugin_os::init())
-        .plugin(tauri_plugin_shell::init())
         // Updater is scaffolded so a future endpoint just needs the
         // `plugins.updater` block in tauri.conf.json filled in. With no
         // endpoint configured the plugin's `check()` call surfaces a clean
         // "no updater configured" error — the frontend treats it as "no
         // update available".
+        // SECURITY: never set `updater.active: true` in tauri.conf.json
+        // without a real `pubkey` and properly signed release artifacts.
+        // An active updater with an unsigned or missing pubkey allows
+        // arbitrary code execution via a MitM update payload.
         .plugin(tauri_plugin_updater::Builder::new().build())
         .setup(|app| {
             let handle = app.handle().clone();
@@ -55,18 +56,14 @@ pub fn run() {
                 .app_data_dir()
                 .map_err(|e| -> Box<dyn std::error::Error> { Box::from(e.to_string()) })?;
 
-            // Init DB + start the local stream proxy. Both run on the async
-            // runtime; setup runs once at startup and we want both ready
-            // before any command can fire.
-            let (db, proxy_handle) = tauri::async_runtime::block_on(async {
-                let db = Db::init(app_data).await?;
-                let proxy_handle = proxy::start_proxy().await?;
-                Ok::<_, anyhow::Error>((db, proxy_handle))
+            // Init DB on the async runtime; setup runs once at startup and
+            // we want it ready before any command can fire.
+            let db = tauri::async_runtime::block_on(async {
+                Db::init(app_data).await
             })
             .map_err(|e| -> Box<dyn std::error::Error> { Box::from(e.to_string()) })?;
 
             handle.manage(db);
-            handle.manage(proxy_handle);
             handle.manage(PlayerHandle::new());
 
             // System tray with the standard menu (Aç / Devam Et / Mini
@@ -94,7 +91,6 @@ pub fn run() {
             commands::channel::get_channels,
             commands::channel::get_channel,
             commands::channel::get_categories,
-            commands::stream::get_proxy_base,
             commands::stream::play_stream,
             commands::stream::stop_stream,
             commands::stream::pause_toggle_stream,

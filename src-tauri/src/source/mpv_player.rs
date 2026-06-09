@@ -50,7 +50,17 @@ impl Player {
             try_set!(mpv, "log-file", log_path.as_str());
             tracing::info!(path = %log_path, "mpv log routed to file");
         }
+        // Use `status` level in release builds so mpv doesn't dump full HTTP
+        // request URLs (which may contain credentials) into the log file.
+        // In debug builds, verbose logging is kept for local triage.
+        // SECURITY residual: mpv may still log the opened stream URL at
+        // `status` level; full suppression requires a credential-stripping
+        // proxy which has been intentionally removed. `status` is the
+        // accepted balance between observability and credential safety.
+        #[cfg(debug_assertions)]
         try_set!(mpv, "msg-level", "all=v");
+        #[cfg(not(debug_assertions))]
+        try_set!(mpv, "msg-level", "all=status");
 
         // ── IPTV-tuned defaults ───────────────────────────────────────────
         // All `try_set!` calls are best-effort. Some keys are

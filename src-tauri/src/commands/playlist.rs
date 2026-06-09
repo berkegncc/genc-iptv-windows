@@ -7,6 +7,7 @@
 use serde::Deserialize;
 use tauri::State;
 
+use crate::data::crypto;
 use crate::data::models::Playlist;
 use crate::data::rows::PlaylistRow;
 use crate::data::Db;
@@ -31,7 +32,11 @@ pub async fn get_playlists(db: State<'_, Db>) -> CommandResult<Vec<Playlist>> {
     .fetch_all(&db.pool)
     .await?;
 
-    Ok(rows.into_iter().map(PlaylistRow::into_domain).collect())
+    let playlists = rows
+        .into_iter()
+        .map(PlaylistRow::into_domain)
+        .collect::<anyhow::Result<Vec<_>>>()?;
+    Ok(playlists)
 }
 
 #[tauri::command]
@@ -48,7 +53,7 @@ pub async fn get_active_playlist(db: State<'_, Db>) -> CommandResult<Option<Play
     .fetch_optional(&db.pool)
     .await?;
 
-    Ok(row.map(PlaylistRow::into_domain))
+    Ok(row.map(PlaylistRow::into_domain).transpose()?)
 }
 
 // ─── Add / sync / delete ─────────────────────────────────────────────────────
@@ -110,6 +115,13 @@ pub async fn add_xtream_playlist(
     let info = xtream::mapper::to_user_info(&auth)
         .ok_or_else(|| CommandError::Message("Xtream sunucusu kimlik bilgilerini doğrulamadı.".into()))?;
 
+    // Encrypt credentials before storage. Validation above uses raw
+    // payload.username/password — encryption only happens at the write site.
+    let enc_user = crypto::encrypt(&payload.username)
+        .map_err(|e| CommandError::Message(e.to_string()))?;
+    let enc_pass = crypto::encrypt(&payload.password)
+        .map_err(|e| CommandError::Message(e.to_string()))?;
+
     let is_trial_int = info.is_trial as i32;
     let res = sqlx::query(
         r#"
@@ -122,9 +134,9 @@ pub async fn add_xtream_playlist(
     )
     .bind(&payload.name)
     .bind(&payload.server_url)
-    .bind(&payload.username)
-    .bind(&payload.password)
-    .bind(&info.username)
+    .bind(&enc_user)
+    .bind(&enc_pass)
+    .bind(&info.username)  // xtream_username is the display field — stays plaintext
     .bind(&info.status)
     .bind(info.exp_date_millis)
     .bind(is_trial_int)

@@ -4,8 +4,10 @@
 //! Each Row has `into_domain()` to convert to the public model. This avoids
 //! needing `sqlx::query!` macros (which require DATABASE_URL at compile time).
 
+use anyhow::Result;
 use sqlx::FromRow;
 
+use super::crypto;
 use super::models::{
     CastMember, Channel, ContinueWatching, Episode, Favorite, Playlist, PlaylistType,
     Program, Series, TargetType, VodItem, VodKind, XtreamUserInfo,
@@ -50,7 +52,15 @@ pub struct PlaylistRow {
 }
 
 impl PlaylistRow {
-    pub fn into_domain(self) -> Playlist {
+    pub fn into_domain(self) -> Result<Playlist> {
+        // Decrypt the two secret fields. Legacy plaintext (no "dpapi:v1:" tag)
+        // passes through unchanged so existing rows keep working before the
+        // startup migration runs.
+        let username = self.username.map(|u| crypto::decrypt(&u)).transpose()?;
+        let password = self.password.map(|p| crypto::decrypt(&p)).transpose()?;
+
+        // NOTE: xtream_username is the user_info *display* field (from the
+        // server's user_info API), NOT the auth credential — leave it plaintext.
         let user_info = self.xtream_username.map(|u| XtreamUserInfo {
             username: u,
             status: self.xtream_status.unwrap_or_else(|| "Unknown".into()),
@@ -58,20 +68,20 @@ impl PlaylistRow {
             is_trial: self.xtream_is_trial.unwrap_or(0) != 0,
             max_connections: self.xtream_max_connections.map(|n| n as i32),
         });
-        Playlist {
+        Ok(Playlist {
             id: self.id,
             name: self.name,
             kind: PlaylistType::from_db_str(&self.kind),
             url: self.url,
-            username: self.username,
-            password: self.password,
+            username,
+            password,
             epg_url: self.epg_url,
             user_agent: self.user_agent,
             is_active: self.is_active != 0,
             last_synced_at: self.last_synced_at,
             channel_count: self.channel_count as i32,
             user_info,
-        }
+        })
     }
 }
 
