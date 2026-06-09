@@ -81,7 +81,7 @@
   --shadow-pop:  0 24px 60px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.04);
 
   /* Window chrome */
-  --titlebar-h: 36px;
+  --titlebar-h: 48px;
   --sidebar-w: 240px;
   --sidebar-w-mini: 64px;
   --topbar-h: 56px;

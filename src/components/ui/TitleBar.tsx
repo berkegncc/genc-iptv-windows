@@ -10,7 +10,7 @@ interface TitleBarProps {
 export function TitleBar({ title = "", breadcrumb = null, right = null }: TitleBarProps) {
   return (
     <div
-      data-tauri-drag-region
+      data-tauri-drag-region="deep"
       className="no-select"
       style={{
         height: "var(--titlebar-h)",

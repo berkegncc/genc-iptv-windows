@@ -19,6 +19,14 @@ import { useDisplayLock } from "../hooks/useDisplayLock";
 import { useFirstFrameReady } from "../hooks/useFirstFrameReady";
 import { usePlaybackHealth } from "../hooks/usePlaybackHealth";
 import { PlaybackFailedOverlay } from "../components/ui/PlaybackFailedOverlay";
+import {
+  CenterButton,
+  PlayIcon,
+  PauseIcon,
+  SkipBackIcon,
+  SkipForwardIcon,
+} from "../components/ui/PlayerControls";
+import { WinButtons } from "../components/ui/WinButtons";
 import { t, tFmt } from "../lib/i18n";
 
 /**
@@ -938,10 +946,18 @@ function PlayerShell({
           zIndex: 10,
         }}
       >
-        {/* Top bar */}
+        {/* Top bar — doubles as the window drag handle (this fullscreen
+            player route renders outside Layout, so it doesn't inherit the
+            TitleBar's drag region). "deep" lets clicks anywhere in the bar
+            drag the window; the buttons are <button>s so Tauri skips them. */}
         <div
+          data-tauri-drag-region="deep"
           style={{
-            padding: "16px 22px",
+            position: "relative",
+            // Right padding reserves space for the 138px-wide caption buttons
+            // pinned to the top-right corner so the top-bar items never slide
+            // under them.
+            padding: "16px 150px 16px 22px",
             display: "flex",
             alignItems: "center",
             gap: 12,
@@ -992,6 +1008,13 @@ function PlayerShell({
           >
             ⊟
           </GlassButton>
+          {/* Classic Windows caption buttons (minimize / maximize / close),
+              flush to the top-right corner. They live inside the auto-hiding
+              controls overlay, so they fade with the rest of the chrome. The
+              buttons are <button>s, so the drag region above ignores them. */}
+          <div style={{ position: "absolute", top: 0, right: 0 }}>
+            <WinButtons />
+          </div>
         </div>
 
         {/* Center cluster: ⟲10  ⏯  ⟳10  — three frosted-glass orbs in a
@@ -1415,156 +1438,6 @@ function PlayerShell({
 }
 
 // ─── Subcomponents ──────────────────────────────────────────────────────────
-
-/**
- * Frosted-glass orb used for the center cluster (skip-back / play / skip-
- * forward). `variant="play"` is the primary CTA — slightly larger and
- * brighter; `variant="skip"` flanks it. All three share the same spring
- * tap/hover so the cluster feels like a single physical control unit.
- */
-function CenterButton({
-  variant,
-  onClick,
-  title,
-  children,
-}: {
-  variant: "play" | "skip";
-  onClick: () => void;
-  title: string;
-  children: React.ReactNode;
-}) {
-  const dim = variant === "play" ? 86 : 60;
-  const isPlay = variant === "play";
-  return (
-    <motion.button
-      onClick={onClick}
-      title={title}
-      whileHover={{ scale: 1.06 }}
-      whileTap={{ scale: 0.92 }}
-      transition={{ type: "spring", stiffness: 480, damping: 22 }}
-      style={{
-        width: dim,
-        height: dim,
-        borderRadius: "50%",
-        background: isPlay
-          ? "rgba(255,255,255,0.96)"
-          : "rgba(20,24,28,0.55)",
-        backdropFilter: isPlay ? undefined : "blur(16px)",
-        WebkitBackdropFilter: isPlay ? undefined : "blur(16px)",
-        border: isPlay
-          ? "none"
-          : "1px solid rgba(255,255,255,0.10)",
-        color: isPlay ? "#0E1213" : "#fff",
-        cursor: "pointer",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        boxShadow: isPlay
-          ? "0 14px 38px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.08)"
-          : "0 8px 28px rgba(0,0,0,0.45)",
-        outline: "none",
-        padding: 0,
-      }}
-    >
-      {children}
-    </motion.button>
-  );
-}
-
-function PlayIcon() {
-  // Slight horizontal offset so the visual centre of the triangle
-  // matches the geometric centre of the button.
-  return (
-    <svg
-      width="34"
-      height="34"
-      viewBox="0 0 34 34"
-      style={{ marginLeft: 4 }}
-    >
-      <path d="M9 5 L27 17 L9 29 Z" fill="currentColor" />
-    </svg>
-  );
-}
-
-function PauseIcon() {
-  return (
-    <svg width="32" height="32" viewBox="0 0 32 32">
-      <rect x="9" y="6" width="5" height="20" rx="1.6" fill="currentColor" />
-      <rect x="18" y="6" width="5" height="20" rx="1.6" fill="currentColor" />
-    </svg>
-  );
-}
-
-function SkipBackIcon() {
-  // Curved arrow ~270° going clockwise with an arrow-head on the upper
-  // left, plus "10" stacked underneath. Designed to read instantly even
-  // at 24px because we keep stroke-widths consistent and weighty.
-  return (
-    <svg width="30" height="30" viewBox="0 0 28 28" fill="none">
-      <path
-        d="M11 5 L7 9 L11 13"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-      <path
-        d="M7 9 H14 A8 8 0 1 1 6 17"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        fill="none"
-      />
-      <text
-        x="14"
-        y="22.5"
-        textAnchor="middle"
-        fontSize="8"
-        fontFamily="ui-monospace, monospace"
-        fontWeight="700"
-        fill="currentColor"
-      >
-        10
-      </text>
-    </svg>
-  );
-}
-
-function SkipForwardIcon() {
-  // Mirror of SkipBackIcon — same arrow but counter-clockwise, head on
-  // the upper right.
-  return (
-    <svg width="30" height="30" viewBox="0 0 28 28" fill="none">
-      <path
-        d="M17 5 L21 9 L17 13"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-      <path
-        d="M21 9 H14 A8 8 0 1 0 22 17"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        fill="none"
-      />
-      <text
-        x="14"
-        y="22.5"
-        textAnchor="middle"
-        fontSize="8"
-        fontFamily="ui-monospace, monospace"
-        fontWeight="700"
-        fill="currentColor"
-      >
-        10
-      </text>
-    </svg>
-  );
-}
 
 function TrackPanel({
   tracks,

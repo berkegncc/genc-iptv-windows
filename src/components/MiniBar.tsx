@@ -13,7 +13,7 @@ export function MiniBar() {
   const setMiniMode = useUIStore((s) => s.setMiniMode);
   return (
     <div
-      data-tauri-drag-region
+      data-tauri-drag-region="deep"
       style={{
         position: "absolute",
         top: 0,

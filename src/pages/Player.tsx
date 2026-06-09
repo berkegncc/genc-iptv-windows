@@ -10,6 +10,8 @@ import { ChannelLogo } from "../components/ui/ChannelLogo";
 import { mpvApi } from "../lib/tauri";
 import { usePlaybackHealth } from "../hooks/usePlaybackHealth";
 import { PlaybackFailedOverlay } from "../components/ui/PlaybackFailedOverlay";
+import { CenterButton, PlayIcon, PauseIcon } from "../components/ui/PlayerControls";
+import { WinButtons } from "../components/ui/WinButtons";
 import { useDisplayLock } from "../hooks/useDisplayLock";
 import { useFirstFrameReady } from "../hooks/useFirstFrameReady";
 
@@ -248,6 +250,15 @@ function PlayerInner({
       .catch((e) => console.warn("[Player] toggleFullscreen", e));
   }, []);
 
+  // Reload the stream — re-issues the libmpv loadfile, which reconnects at
+  // the live edge. Fixes the "froze during a network blip, came back behind
+  // live" case: one click jumps back to the current broadcast.
+  const handleReload = useCallback(() => {
+    setIsPlaying(true);
+    showControls();
+    issuePlay().catch((e) => console.warn("[Player] reload failed", e));
+  }, [issuePlay, showControls]);
+
   // ── Keyboard shortcuts ────────────────────────────────────────────────────
   // Tauri-side: ←/→ kanal, Esc geri. Playback (Space/F/M/seek) mpv'nin kendi
   // keybind'leri ile (mpv child window focus aldığında).
@@ -415,10 +426,17 @@ function PlayerInner({
           zIndex: 10,
         }}
       >
-      {/* Top bar */}
+      {/* Top bar — doubles as the window drag handle (these fullscreen
+          player routes render outside Layout, so they don't inherit the
+          TitleBar's drag region). "deep" lets clicks anywhere in the bar
+          drag the window; the back button is a <button> so Tauri skips it. */}
       <div
+        data-tauri-drag-region="deep"
         style={{
-          padding: "16px 20px",
+          position: "relative",
+          // Right padding reserves space for the 138px-wide caption buttons
+          // pinned to the top-right corner so the LivePill never slides under.
+          padding: "16px 150px 16px 20px",
           display: "flex",
           alignItems: "center",
           gap: 12,
@@ -463,6 +481,13 @@ function PlayerInner({
           )}
         </div>
         <LivePill />
+        {/* Classic Windows caption buttons (minimize / maximize / close),
+            flush to the top-right corner. They live inside the auto-hiding
+            controls overlay, so they fade with the rest of the chrome. The
+            buttons are <button>s, so the drag region above ignores them. */}
+        <div style={{ position: "absolute", top: 0, right: 0 }}>
+          <WinButtons />
+        </div>
       </div>
 
       {/* Middle = video area; mpv renders here. We overlay one big
@@ -477,37 +502,15 @@ function PlayerInner({
           pointerEvents: "none",
         }}
       >
-        <button
-          onClick={togglePlay}
-          title={isPlaying ? "Duraklat (Space)" : "Oynat (Space)"}
-          style={{
-            width: 76,
-            height: 76,
-            borderRadius: "50%",
-            background: "rgba(0,0,0,0.45)",
-            border: "1px solid rgba(255,255,255,0.18)",
-            color: "#fff",
-            fontSize: 32,
-            cursor: "pointer",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            transition: "all 160ms",
-            pointerEvents: controlsVisible ? "auto" : "none",
-            backdropFilter: "blur(4px)",
-            WebkitBackdropFilter: "blur(4px)",
-          }}
-          onMouseEnter={(e) => {
-            (e.currentTarget as HTMLButtonElement).style.background =
-              "rgba(255,255,255,0.18)";
-          }}
-          onMouseLeave={(e) => {
-            (e.currentTarget as HTMLButtonElement).style.background =
-              "rgba(0,0,0,0.45)";
-          }}
-        >
-          {isPlaying ? "⏸" : "▶"}
-        </button>
+        <div style={{ pointerEvents: controlsVisible ? "auto" : "none" }}>
+          <CenterButton
+            variant="play"
+            onClick={togglePlay}
+            title={isPlaying ? "Duraklat (Space)" : "Oynat (Space)"}
+          >
+            {isPlaying ? <PauseIcon /> : <PlayIcon />}
+          </CenterButton>
+        </div>
       </div>
 
       {/* Bottom bar */}
@@ -550,7 +553,22 @@ function PlayerInner({
           <ShortcutsHint />
         </div>
 
-        {/* Right cluster — fullscreen + next channel */}
+        {/* Right cluster — reload (back to live) + fullscreen + next channel */}
+        <GlassButton onClick={handleReload} title="Yayını yenile (canlıya dön)">
+          <svg
+            width="17"
+            height="17"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <path d="M21 12a9 9 0 1 1-2.64-6.36" />
+            <path d="M21 3v6h-6" />
+          </svg>
+        </GlassButton>
         <GlassButton onClick={toggleFullscreen} title="Tam ekran (F)">
           ⛶
         </GlassButton>

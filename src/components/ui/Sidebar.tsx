@@ -202,7 +202,6 @@ export function Sidebar({ profile }: SidebarProps) {
             <span style={{ fontSize: 12.5, fontWeight: 500 }}>
               {profileName.trim() || "Profil"}
             </span>
-            <span className="meta-caps" style={{ fontSize: 9 }}>Çevrim içi</span>
           </div>
         )}
         {!mini && <span style={{ color: "var(--text-3)", fontSize: 11 }}>▾</span>}
